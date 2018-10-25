@@ -2,7 +2,7 @@ const RequestHelper = require('../helpers/request_helper.js');
 const PubSub = require('../helpers/pub_sub.js');
 
 const Munro = function () {
-  this.data = null;
+  this.data = [];
 };
 
 Munro.prototype.getData = function () {
@@ -10,12 +10,22 @@ Munro.prototype.getData = function () {
   const requestHelper = new RequestHelper(url);
   requestHelper.get()
     .then((data) => {
-      this.data = data
-      Pubsub.publish("Munro:hills-ready", thils.data);
-    });
+      this.handleDataReady(data);
+      PubSub.publish("Munro:hills-ready", this.data);
+    })
     .catch((error) => {
       PubSub.publish("Murno:error", error);
     });
+};
+
+Munro.prototype.handleDataReady = function (hills) {
+  this.data = hills.map((hill) => {
+    return {
+      name: hill.name,
+      meaning: hill.meaning,
+      height: hill.height
+    };
+  });
 };
 
 module.exports = Munro;
